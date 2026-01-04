@@ -99,7 +99,16 @@ public class DersMenu {
         boolean devamEt = true;
         while (devamEt) {
             String ad = InputUtil.readOnlyText("Ders Adı: ");
-            String kod = InputUtil.readString("Ders Kodu: ");
+            String kod;
+            while (true) {
+                kod = InputUtil.readString("Ders Kodu (3 basamaklı sayı): ");
+                if (kod.matches("\\d{3}")) {
+                    break;
+                } else {
+                    System.out.println("Hata: Ders kodu yalnızca 3 basamaklı bir sayı olmalıdır (Örn: 101, 405)!");
+                }
+            }
+
             int akts = InputUtil.readInt("AKTS: ");
 
             Ders ders = new Ders(ad, kod, akts);

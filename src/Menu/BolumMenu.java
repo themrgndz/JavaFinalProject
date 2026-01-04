@@ -157,7 +157,7 @@ public class BolumMenu {
         List<Bolum> bolumler = bolumService.bolumListele();
 
         if (bolumler.isEmpty()) {
-            System.out.println("Kayıtlı bölüm bulunmamaktadır.");
+            System.out.println("Kayıtlı bölüm bulunmamaktadır.\n");
             return;
         }
 

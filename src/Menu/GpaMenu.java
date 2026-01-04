@@ -114,47 +114,79 @@ public class GpaMenu {
             return;
         }
 
-        List<Ders> dersler = dersService.dersListele();
-        if (dersler.isEmpty()) {
-            System.out.println("Hata: Sistemde kayıtlı ders yok. Önce ders eklemelisiniz.");
-            return;
-        }
+        boolean devamEt = true;
+        while (devamEt) {
+            List<Ders> dersler = dersService.dersListele();
+            if (dersler.isEmpty()) {
+                System.out.println("Hata: Sistemde kayıtlı ders yok. Önce ders eklemelisiniz.");
+                return;
+            }
 
-        System.out.println("\n--- Mevcut Dersler ---");
-        for (Ders d : dersler) {
-            System.out.println(d.getKod() + " - " + d.getAd() + " (" + d.getAkts() + " AKTS)");
-        }
+            System.out.println("\n--- Mevcut Dersler ---");
+            for (Ders d : dersler) {
+                System.out.println(d.getKod() + " - " + d.getAd() + " (" + d.getAkts() + " AKTS)");
+            }
 
-        String dersKodu = InputUtil.readString("Ders Kodu: ");
-        Ders ders = dersService.dersAra(dersKodu);
-        if (ders == null) {
-            System.out.println("Hata: Ders bulunamadı.");
-            return;
-        }
+            String dersKodu = InputUtil.readString("Ders Kodu: ");
+            Ders ders = dersService.dersAra(dersKodu);
+            if (ders == null) {
+                System.out.println("Hata: Ders bulunamadı.");
+            } else {
+                int puan;
+                while (true) {
+                    puan = InputUtil.readInt("Öğrenci Notu (0-100): ");
+                    if (puan >= 0 && puan <= 100) break;
+                    System.out.println("Hata: Lütfen 0 ile 100 arasında bir değer giriniz!");
+                }
 
-        String harfNotu = InputUtil.readString("Harf Notu (AA, BA, BB...): ");
-        if (gpaService.notEkle(ogrenci, ders, harfNotu)) {
-            System.out.println("Not başarıyla sisteme eklendi.");
-        } else {
-            System.out.println("Hata: Not eklenemedi (Harf notu geçersiz veya kayıt zaten mevcut).");
+                String harfNotu = gpaService.puaniHarfeCevir(puan);
+
+                if (gpaService.notEkle(ogrenci, ders, harfNotu)) {
+                    System.out.println("Not başarıyla hesaplandı (" + harfNotu + ") ve sisteme eklendi.");
+                } else {
+                    System.out.println("Hata: Not eklenemedi (Kayıt zaten mevcut olabilir).");
+                }
+            }
+
+            String yanit = InputUtil.readString("\n(" + ogrenci.getIsim() + ") için başka bir ders notu girmek ister misiniz? (E/H): ");
+            devamEt = yanit.equalsIgnoreCase("E");
         }
     }
 
     /**
      * Öğrencinin daha önce girilmiş bir ders notunu yenisiyle değiştirir.
+     * Sayısal puan alır ve harf notuna çevirerek günceller.
      */
     private void notGuncelle() {
         int ogrNo = InputUtil.readInt("Öğrenci No: ");
         Ogrenci ogrenci = ogrenciService.ogrenciAra(ogrNo);
 
+        if (ogrenci == null) {
+            System.out.println("Hata: Öğrenci bulunamadı.");
+            return;
+        }
+
         String dersKodu = InputUtil.readString("Ders Kodu: ");
         Ders ders = dersService.dersAra(dersKodu);
 
-        String yeniNot = InputUtil.readString("Yeni Harf Notu: ");
-        if (gpaService.notGuncelle(ogrenci, ders, yeniNot)) {
-            System.out.println("Not başarıyla güncellendi.");
+        if (ders == null) {
+            System.out.println("Hata: Ders bulunamadı.");
+            return;
+        }
+
+        int puan;
+        while (true) {
+            puan = InputUtil.readInt("Yeni Öğrenci Notu (0-100): ");
+            if (puan >= 0 && puan <= 100) break;
+            System.out.println("Hata: Lütfen 0 ile 100 arasında bir değer giriniz!");
+        }
+
+        String yeniHarfNotu = gpaService.puaniHarfeCevir(puan);
+
+        if (gpaService.notGuncelle(ogrenci, ders, yeniHarfNotu)) {
+            System.out.println("Not başarıyla güncellendi. Yeni Harf Notu: " + yeniHarfNotu);
         } else {
-            System.out.println("Hata: Not güncellenemedi (Öğrenci/Ders bulunamadı veya not formatı hatalı).");
+            System.out.println("Hata: Not güncellenemedi (Bu öğrenci bu dersi daha önce almamış olabilir).");
         }
     }
 
